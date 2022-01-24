@@ -1,3 +1,6 @@
+// Import de la classe rangée dans le fichier class.js
+import { CreationCanape } from "./class.js";
+
 const produits = document.getElementById("items");
 const url = "http://localhost:3000/api/products";
 
@@ -12,18 +15,6 @@ fetch(url)
     .catch(function(erreur) {
         console.log ("Erreur : " + erreur);
     })
-
-
-// Création de la class qui permettra de créer un modèle d'objet
-class CreationCanape {
-    constructor (_id, imageUrl, altTxt, name, description) {
-        this._id = _id;
-        this.imageUrl = imageUrl;
-        this.altTxt = altTxt;
-        this.name = name;
-        this.description = description;
-    }
-}
 
 // Création du tableau qui contiendra les objets créés
 let tabProduits = [];
@@ -40,11 +31,10 @@ function creationProduits(data) {
 function affichageProduits () {
     for (let i of tabProduits) {
         // Utilisation de URLSearchParams pour le lien vers chaque produit
-        let adresse = "http://127.0.0.1:5500/front/html/product.html";
-        console.log(adresse)
+        let adresse = window.location.href;
         let lien = new URL(adresse);
+        lien.pathname = "/front/html/product.html";
         lien.searchParams.set("id", i._id)
-        console.log(lien)
         
         // Intégration dans le DOM
         produits.innerHTML +=
