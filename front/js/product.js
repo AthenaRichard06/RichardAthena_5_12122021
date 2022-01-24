@@ -58,6 +58,7 @@ bouton.addEventListener("click", (ajouterPanier));
 function ajouterPanier () {
     // Création des variables qui serviront dans cette fonction
     let id = reference;
+    let image = ajoutImage.innerHTML;
     let nom = ajoutTitre.innerText;
     let choixCouleur = ajoutCouleurs.value;
     let quantite = parseInt(ajoutQuantite.value);
@@ -75,7 +76,7 @@ function ajouterPanier () {
         // Si le tableau est null, on insère le premier produit
         if (tableauProduits === null) {
             tableauProduits = [];
-            tableauProduits.push(new AjoutProduit(id, nom, choixCouleur, quantite));
+            tableauProduits.push(new AjoutProduit(id, image, nom, choixCouleur, quantite));
             alert(`Vous avez bien ajouté ${quantite} produit(s) dans votre panier`);
             localStorage.setItem("produit", JSON.stringify(tableauProduits));
         // Sinon, si le tableau existe, on ajoute le produit
@@ -84,7 +85,7 @@ function ajouterPanier () {
             const produitIndex = tableauProduits.findIndex(produit => id === produit.id && choixCouleur === produit.choixCouleur)
             // Cas où le produit n'est pas présent dans tableauProduits
             if (produitIndex < 0) {
-                tableauProduits.push(new AjoutProduit(id, nom, choixCouleur, quantite));
+                tableauProduits.push(new AjoutProduit(id, image, nom, choixCouleur, quantite));
                 alert(`Vous avez bien ajouté ${quantite} produit(s) dans votre panier`);
             // Cas où le produit est présent dans tableauProduits
             } else {
