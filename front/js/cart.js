@@ -5,6 +5,9 @@ let panier = JSON.parse(localStorage.getItem("produit"));
 let produits = document.getElementById("cart__items");
 let quantiteTotale = document.getElementById("totalQuantity");
 let prixTotal = document.getElementById("totalPrice");
+let titrePanier = document.querySelector("h1");
+let quantiteProduit = document.getElementsByClassName("itemQuantity");
+let boutonSupprimer = document.getElementsByClassName("deleteItem");
 
 
 // Récupération des données dans l'API
@@ -17,6 +20,8 @@ fetch(api)
         afficherProduits(data);
         calculQuantite();
         calculPrix(data);
+        changeQuantite();
+        suppressionProduit();
     })
     .catch(function(erreur) {
         console.log ("Erreur : " + erreur);
@@ -24,32 +29,36 @@ fetch(api)
 
 // Création de la fonction qui permettra d'ajouter les produits dans le DOM (via le localStorage et l'API)
 function afficherProduits (data) {
-    for (let i of panier) {
-        for (let j of data) {
-            // On ajoute la condition que l'id dans le localStorage doit être identique à l'id dans l'API, afin de pouvoir récupérer le prix dans l'API
-            if (i.id === j._id) {
-                produits.innerHTML += 
-                `<article class="cart__item" data-id="${i.id}" data-color="${i.choixCouleur}">
-                    <div class="cart__item__img">
-                        ${i.image}
-                    </div>
-                    <div class="cart__item__content">
-                        <div class="cart__item__content__description">
-                            <h2>${i.nom}</h2>
-                            <p>${i.choixCouleur}</p>
-                            <p>${j.price} €</p>
+    if (panier === null) {
+        titrePanier.insertAdjacentText ("beforeend", " est vide");
+    } else {
+        for (let i of panier) {
+            for (let j of data) {
+                // On ajoute la condition que l'id dans le localStorage doit être identique à l'id dans l'API, afin de pouvoir récupérer les infos manquantes
+                if (i.id === j._id) {
+                    produits.innerHTML += 
+                    `<article class="cart__item" data-id="${i.id}" data-color="${i.choixCouleur}">
+                        <div class="cart__item__img">
+                            <img src="${j.imageUrl}" alt="${j.altTxt}">
                         </div>
-                        <div class="cart__item__content__settings">
-                            <div class="cart__item__content__settings__quantity">
-                                <p>Qté : </p>
-                                <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${i.quantite}">
+                        <div class="cart__item__content">
+                            <div class="cart__item__content__description">
+                                <h2>${i.nom}</h2>
+                                <p>${i.choixCouleur}</p>
+                                <p>${j.price} €</p>
                             </div>
-                            <div class="cart__item__content__settings__delete">
-                                <p class="deleteItem">Supprimer</p>
+                            <div class="cart__item__content__settings">
+                                <div class="cart__item__content__settings__quantity">
+                                    <p>Qté : </p>
+                                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${i.quantite}">
+                                </div>
+                                <div class="cart__item__content__settings__delete">
+                                    <p class="deleteItem">Supprimer</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </article>`
+                    </article>`
+                }
             }
         }
     }
@@ -75,4 +84,42 @@ function calculPrix (data) {
         }
     }
     prixTotal.insertAdjacentText ("afterbegin", prix);
+}
+
+// Création de la fonction qui permettra de changer la quantité d'un produit
+function changeQuantite () {
+    for (let changement of quantiteProduit) {
+        // On écoute l'évènement qu'il se passe au changement de quantité
+        changement.addEventListener ("change", function (e) {
+            // On récupère l'élément "article" le plus proche
+            let changementProduit = changement.closest("article");
+            // On récupère son data-id et son data-color
+            let changementProduitId = changementProduit.dataset.id;
+            let changementProduitCouleur = changementProduit.dataset.color;
+            // On recherche dans le localStorage l'id et la couleur identiques
+            let chercheProduitIndex = panier.findIndex(produit => produit.id === changementProduitId && produit.choixCouleur === changementProduitCouleur);
+            // Si c'est bon, on veut que la quantité du produit soit égale à la valeur de la fonction de changement e
+            panier[chercheProduitIndex].quantite = e.target.value;
+            localStorage.setItem("produit", JSON.stringify(panier));
+        })
+    }
+}
+
+// Création de la fonction de suppression
+function suppressionProduit () {
+    for (let bouton of boutonSupprimer) {
+        bouton.addEventListener ("change", function () {
+           // On récupère l'élément "article" le plus proche et on le supprime
+           let suppressionProduit = bouton.closest("article");
+           suppressionProduit.remove();
+           // On récupère son data-id et son data-color
+           let suppressionProduitId = suppressionProduit.dataset.id;
+           let suppressionProduitCouleur = suppressionProduit.dataset.color;
+           // On recherche dans le localStorage l'id et la couleur identiques
+           let suppressionProduitIndex = panier.findIndex(produit => produit.id === suppressionProduitId && produit.choixCouleur === suppressionProduitCouleur);
+           // Si c'est bon, on veut que le résultat de suppressionProduitIndex soit supprimé dans le panier
+           panier.splice(suppressionProduitIndex, 1);
+           localStorage.setItem("produit", JSON.stringify(panier)); 
+        })
+    }
 }

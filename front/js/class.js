@@ -10,9 +10,8 @@ export class CreationCanape {
 }
 
 export class AjoutProduit {
-    constructor (id, image, nom, choixCouleur, quantite) {
+    constructor (id, nom, choixCouleur, quantite) {
         this.id = id;
-        this.image = image;
         this.nom = nom;
         this.choixCouleur = choixCouleur;
         this.quantite = quantite;
