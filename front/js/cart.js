@@ -8,6 +8,7 @@ let prixTotal = document.getElementById("totalPrice");
 let titrePanier = document.querySelector("h1");
 let quantiteProduit = document.getElementsByClassName("itemQuantity");
 let boutonSupprimer = document.getElementsByClassName("deleteItem");
+let formulaire = document.querySelector("form");
 
 
 // Récupération des données dans l'API
@@ -22,6 +23,7 @@ fetch(api)
         calculPrix(data);
         changeQuantite();
         suppressionProduit();
+        validationFormulaire();
     })
     .catch(function(erreur) {
         console.log ("Erreur : " + erreur);
@@ -29,14 +31,14 @@ fetch(api)
 
 // Création de la fonction qui permettra d'ajouter les produits dans le DOM (via le localStorage et l'API)
 function afficherProduits (data) {
-    if (panier === null) {
+    if (panier === null || (panier.length == 0)) {
         titrePanier.insertAdjacentText ("beforeend", " est vide");
     } else {
         for (let i of panier) {
             for (let j of data) {
                 // On ajoute la condition que l'id dans le localStorage doit être identique à l'id dans l'API, afin de pouvoir récupérer les infos manquantes
                 if (i.id === j._id) {
-                    produits.innerHTML += 
+                    let texteDOM = 
                     `<article class="cart__item" data-id="${i.id}" data-color="${i.choixCouleur}">
                         <div class="cart__item__img">
                             <img src="${j.imageUrl}" alt="${j.altTxt}">
@@ -58,6 +60,7 @@ function afficherProduits (data) {
                             </div>
                         </div>
                     </article>`
+                    produits.innerHTML += texteDOM;
                 }
             }
         }
@@ -68,7 +71,7 @@ function afficherProduits (data) {
 function calculQuantite () {
     let nombre = 0;
     for (let i of panier) {
-        nombre += i.quantite;
+        nombre += Number(i.quantite);
     }
     quantiteTotale.insertAdjacentText ("afterbegin", nombre);
 }
@@ -79,7 +82,7 @@ function calculPrix (data) {
     for (let i of panier) {
         for (let j of data) {
             if (i.id === j._id) {
-                prix += j.price * i.quantite;
+                prix += Number(j.price) * Number(i.quantite);
             }
         }
     }
@@ -99,8 +102,9 @@ function changeQuantite () {
             // On recherche dans le localStorage l'id et la couleur identiques
             let chercheProduitIndex = panier.findIndex(produit => produit.id === changementProduitId && produit.choixCouleur === changementProduitCouleur);
             // Si c'est bon, on veut que la quantité du produit soit égale à la valeur de la fonction de changement e
-            panier[chercheProduitIndex].quantite = e.target.value;
+            panier[chercheProduitIndex].quantite = Number(e.target.value);
             localStorage.setItem("produit", JSON.stringify(panier));
+            location.reload();
         })
     }
 }
@@ -108,7 +112,7 @@ function changeQuantite () {
 // Création de la fonction de suppression
 function suppressionProduit () {
     for (let bouton of boutonSupprimer) {
-        bouton.addEventListener ("change", function () {
+        bouton.addEventListener ("click", function () {
            // On récupère l'élément "article" le plus proche et on le supprime
            let suppressionProduit = bouton.closest("article");
            suppressionProduit.remove();
@@ -117,9 +121,102 @@ function suppressionProduit () {
            let suppressionProduitCouleur = suppressionProduit.dataset.color;
            // On recherche dans le localStorage l'id et la couleur identiques
            let suppressionProduitIndex = panier.findIndex(produit => produit.id === suppressionProduitId && produit.choixCouleur === suppressionProduitCouleur);
+           console.log(suppressionProduitIndex);
            // Si c'est bon, on veut que le résultat de suppressionProduitIndex soit supprimé dans le panier
            panier.splice(suppressionProduitIndex, 1);
-           localStorage.setItem("produit", JSON.stringify(panier)); 
+           localStorage.setItem("produit", JSON.stringify(panier));
+           location.reload();
         })
     }
 }
+
+// Création de la fonction de vérification des saisies du formulaire
+function validationFormulaire () {
+    // On écoute la modification du champ Prénom
+    formulaire.firstName.addEventListener("change", function () {
+        validationPrenom(this);
+    })
+    // On écoute la modification du champ Nom
+    formulaire.lastName.addEventListener("change", function () {
+        validationNom(this);
+    })
+    // On écoute la modification du champ Adresse
+    formulaire.address.addEventListener("change", function () {
+        validationAdresse(this);
+    })
+    // On écoute la modification du champ Ville
+    formulaire.city.addEventListener("change", function () {
+        validationVille(this);
+    })
+    // On écoute la modification du champ Email
+    formulaire.email.addEventListener("change", function () {
+        validationEmail(this);
+    })
+}
+
+// Création des fonctions de vérification de chaque champ
+function validationPrenom (inputPrenom) {
+    let prenomRegEx = new RegExp ("^[A-Za-zàâäéèêëïîôöùûüÿçæœÂÊÎÔÛÄËÏÖÜÀÆÇÉÈŒÙ-]{2,}$", "g");
+    let message = document.getElementById("firstNameErrorMsg");
+    let test = prenomRegEx.test(inputPrenom.value);
+    if (test) {
+        message.textContent = "";
+        return true;
+    } else {
+        message.textContent = "Votre prénom doit comporter au moins deux lettres et ne pas avoir de caractères spéciaux ou de chiffres";
+        return false;
+    }
+}
+
+function validationNom (inputNom) {
+    let nomRegEx = new RegExp ("^[A-Za-zàâäéèêëïîôöùûüÿçæœÂÊÎÔÛÄËÏÖÜÀÆÇÉÈŒÙ-]{2,}$", "g");
+    let message = document.getElementById("lastNameErrorMsg");
+    let test = nomRegEx.test(inputNom.value);
+    if (test) {
+        message.textContent = "";
+        return true;
+    } else {
+        message.textContent = "Votre nom doit comporter au moins deux lettres et ne pas avoir de caractères spéciaux ou de chiffres";
+        return false;
+    }
+}
+
+function validationAdresse (inputAdresse) {
+    let adresseRegEx = new RegExp ("^[0-9]{1,4}[ ,]{1,}[ A-Za-zàâäéèêëïîôöùûüÿçæœÂÊÎÔÛÄËÏÖÜÀÆÇÉÈŒÙ-]+$", "g");
+    let message = document.getElementById("addressErrorMsg");
+    let test = adresseRegEx.test(inputAdresse.value);
+    if (test) {
+        message.textContent = "";
+        return true;
+    } else {
+        message.textContent = "Votre adresse n'est pas valide";
+        return false;
+    }
+}
+
+function validationVille (inputVille) {
+    let villeRegEx = new RegExp ("^[A-Za-zàâäéèêëïîôöùûüÿçæœÂÊÎÔÛÄËÏÖÜÀÆÇÉÈŒÙ-]{2,}$", "g");
+    let message = document.getElementById("cityErrorMsg");
+    let test = villeRegEx.test(inputVille.value);
+    if (test) {
+        message.textContent = "";
+        return true;
+    } else {
+        message.textContent = "Votre ville doit comporter au minimum deux lettres et ne pas avoir de caractères spéciaux ou de chiffres";
+        return false;
+    }
+}
+
+function validationEmail (inputEmail) {
+    let mailRegEx = new RegExp ("^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$", "g");
+    let message = document.getElementById("emailErrorMsg");
+    let test = mailRegEx.test(inputEmail.value);
+    if (test) {
+        message.textContent = "";
+        return true;
+    } else {
+        message.textContent = "Votre adresse mail n'est pas valide";
+        return false;
+    }
+}
+
