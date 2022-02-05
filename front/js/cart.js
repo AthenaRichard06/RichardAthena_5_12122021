@@ -21,14 +21,15 @@ fetch(api)
         afficherProduits(data);
         calculQuantite();
         calculPrix(data);
-        changeQuantite();
-        suppressionProduit();
+        changeQuantite(data);
+        suppressionProduit(data);
         validationFormulaire();
     })
     .catch(function(erreur) {
         console.log ("Erreur : " + erreur);
     })
 
+// ************************** Affichage **************************
 // Création de la fonction qui permettra d'ajouter les produits dans le DOM (via le localStorage et l'API)
 function afficherProduits (data) {
     if (panier === null || (panier.length == 0)) {
@@ -73,7 +74,7 @@ function calculQuantite () {
     for (let i of panier) {
         nombre += Number(i.quantite);
     }
-    quantiteTotale.insertAdjacentText ("afterbegin", nombre);
+    quantiteTotale.innerHTML = nombre;
 }
 
 // Calcul du prix total des produits dans le panier
@@ -86,11 +87,12 @@ function calculPrix (data) {
             }
         }
     }
-    prixTotal.insertAdjacentText ("afterbegin", prix);
+    prixTotal.innerHTML = prix;
 }
 
+// ************************** Modification **************************
 // Création de la fonction qui permettra de changer la quantité d'un produit
-function changeQuantite () {
+function changeQuantite (data) {
     for (let changement of quantiteProduit) {
         // On écoute l'évènement qu'il se passe au changement de quantité
         changement.addEventListener ("change", function (e) {
@@ -104,13 +106,14 @@ function changeQuantite () {
             // Si c'est bon, on veut que la quantité du produit soit égale à la valeur de la fonction de changement e
             panier[chercheProduitIndex].quantite = Number(e.target.value);
             localStorage.setItem("produit", JSON.stringify(panier));
-            location.reload();
+            calculQuantite();
+            calculPrix(data);
         })
     }
 }
 
 // Création de la fonction de suppression
-function suppressionProduit () {
+function suppressionProduit (data) {
     for (let bouton of boutonSupprimer) {
         bouton.addEventListener ("click", function () {
            // On récupère l'élément "article" le plus proche et on le supprime
@@ -125,11 +128,13 @@ function suppressionProduit () {
            // Si c'est bon, on veut que le résultat de suppressionProduitIndex soit supprimé dans le panier
            panier.splice(suppressionProduitIndex, 1);
            localStorage.setItem("produit", JSON.stringify(panier));
-           location.reload();
+           calculQuantite();
+           calculPrix(data);
         })
     }
 }
 
+// ************************** Formulaire **************************
 // Création de la fonction de vérification des saisies du formulaire
 function validationFormulaire () {
     // On écoute la modification du champ Prénom
@@ -208,7 +213,7 @@ function validationVille (inputVille) {
 }
 
 function validationEmail (inputEmail) {
-    let mailRegEx = new RegExp ("^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$", "g");
+    let mailRegEx = new RegExp ("^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,4}$", "g");
     let message = document.getElementById("emailErrorMsg");
     let test = mailRegEx.test(inputEmail.value);
     if (test) {
@@ -220,3 +225,28 @@ function validationEmail (inputEmail) {
     }
 }
 
+// ************************** Commande **************************
+// Création de la fonction de commande
+function commande () {
+    let commander = document.getElementById("order");
+    // On écoute le clic sur le bouton
+    commander.addEventListener ("click", function(e) {
+        e.preventDefault();
+        // Variables des différentes informations du formulaire
+        let prenom = document.getElementById("firstName");
+        let nom = document.getElementById("lastName");
+        let adresse = document.getElementById("address");
+        let ville = document.getElementById("city");
+        let email = document.getElementById("email");
+
+        // Objet qui regroupe toutes les infos
+        let contact = {
+            firstName = prenom.value,
+            lastName = nom.value,
+            address = adresse.value,
+            city = ville.value,
+            email = email.com
+        }
+
+    })
+}
