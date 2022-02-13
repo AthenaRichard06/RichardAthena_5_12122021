@@ -18,12 +18,13 @@ fetch(api)
         return reponse.json();
     })
     .then(function(data) {
+        validationFormulaire();
         afficherProduits(data);
         calculQuantite();
         calculPrix(data);
         changeQuantite(data);
         suppressionProduit(data);
-        validationFormulaire();
+        commande();
     })
     .catch(function(erreur) {
         console.log ("Erreur : " + erreur);
@@ -71,8 +72,14 @@ function afficherProduits (data) {
 // Calcul de la quantité totale de produits dans le panier
 function calculQuantite () {
     let nombre = 0;
-    for (let i of panier) {
-        nombre += Number(i.quantite);
+    if (panier === null || (panier.length == 0)) {
+        let zeroArticle = document.getElementsByClassName("cart_price");
+        zeroArticle.innerHTML =
+        `<p>Total (<span id="totalQuantity">0</span> article) : <span id="totalPrice">0</span> €</p>`;
+    } else {
+        for (let i of panier) {
+            nombre += Number(i.quantite);
+        }
     }
     quantiteTotale.innerHTML = nombre;
 }
@@ -116,26 +123,29 @@ function changeQuantite (data) {
 function suppressionProduit (data) {
     for (let bouton of boutonSupprimer) {
         bouton.addEventListener ("click", function () {
-           // On récupère l'élément "article" le plus proche et on le supprime
-           let suppressionProduit = bouton.closest("article");
-           suppressionProduit.remove();
-           // On récupère son data-id et son data-color
-           let suppressionProduitId = suppressionProduit.dataset.id;
-           let suppressionProduitCouleur = suppressionProduit.dataset.color;
-           // On recherche dans le localStorage l'id et la couleur identiques
-           let suppressionProduitIndex = panier.findIndex(produit => produit.id === suppressionProduitId && produit.choixCouleur === suppressionProduitCouleur);
-           console.log(suppressionProduitIndex);
-           // Si c'est bon, on veut que le résultat de suppressionProduitIndex soit supprimé dans le panier
-           panier.splice(suppressionProduitIndex, 1);
-           localStorage.setItem("produit", JSON.stringify(panier));
-           calculQuantite();
-           calculPrix(data);
+            // On récupère l'élément "article" le plus proche et on le supprime
+            let suppressionProduit = bouton.closest("article");
+            suppressionProduit.remove();
+            // On récupère son data-id et son data-color
+            let suppressionProduitId = suppressionProduit.dataset.id;
+            let suppressionProduitCouleur = suppressionProduit.dataset.color;
+            // On recherche dans le localStorage l'id et la couleur identiques
+            let suppressionProduitIndex = panier.findIndex(produit => produit.id === suppressionProduitId && produit.choixCouleur === suppressionProduitCouleur);
+            console.log(suppressionProduitIndex);
+            // Si c'est bon, on veut que le résultat de suppressionProduitIndex soit supprimé dans le panier
+            panier.splice(suppressionProduitIndex, 1);
+            localStorage.setItem("produit", JSON.stringify(panier));
+            calculQuantite();
+            calculPrix(data);
+            if ((panier.length == 0)) {
+                titrePanier.insertAdjacentText ("beforeend", " est vide");
+            }
         })
     }
 }
 
 // ************************** Formulaire **************************
-// Création de la fonction de vérification des saisies du formulaire
+// // Création de la fonction de vérification des saisies du formulaire
 function validationFormulaire () {
     // On écoute la modification du champ Prénom
     formulaire.firstName.addEventListener("change", function () {
@@ -160,7 +170,7 @@ function validationFormulaire () {
 }
 
 // Création des fonctions de vérification de chaque champ
-function validationPrenom (inputPrenom) {
+const validationPrenom = function(inputPrenom) {
     let prenomRegEx = new RegExp ("^[A-Za-zàâäéèêëïîôöùûüÿçæœÂÊÎÔÛÄËÏÖÜÀÆÇÉÈŒÙ-]{2,}$", "g");
     let message = document.getElementById("firstNameErrorMsg");
     let test = prenomRegEx.test(inputPrenom.value);
@@ -168,12 +178,12 @@ function validationPrenom (inputPrenom) {
         message.textContent = "";
         return true;
     } else {
-        message.textContent = "Votre prénom doit comporter au moins deux lettres et ne pas avoir de caractères spéciaux ou de chiffres";
+        message.textContent = "Votre prénom doit comporter au moins deux lettres et ne pas avoir de caractères spéciaux ni de chiffres.";
         return false;
     }
 }
 
-function validationNom (inputNom) {
+const validationNom = function(inputNom) {
     let nomRegEx = new RegExp ("^[A-Za-zàâäéèêëïîôöùûüÿçæœÂÊÎÔÛÄËÏÖÜÀÆÇÉÈŒÙ-]{2,}$", "g");
     let message = document.getElementById("lastNameErrorMsg");
     let test = nomRegEx.test(inputNom.value);
@@ -181,12 +191,12 @@ function validationNom (inputNom) {
         message.textContent = "";
         return true;
     } else {
-        message.textContent = "Votre nom doit comporter au moins deux lettres et ne pas avoir de caractères spéciaux ou de chiffres";
+        message.textContent = "Votre nom doit comporter au moins deux lettres et ne pas avoir de caractères spéciaux ni de chiffres.";
         return false;
     }
 }
 
-function validationAdresse (inputAdresse) {
+const validationAdresse = function(inputAdresse) {
     let adresseRegEx = new RegExp ("^[0-9]{1,4}[ ,]{1,}[ A-Za-zàâäéèêëïîôöùûüÿçæœÂÊÎÔÛÄËÏÖÜÀÆÇÉÈŒÙ-]+$", "g");
     let message = document.getElementById("addressErrorMsg");
     let test = adresseRegEx.test(inputAdresse.value);
@@ -194,12 +204,12 @@ function validationAdresse (inputAdresse) {
         message.textContent = "";
         return true;
     } else {
-        message.textContent = "Votre adresse n'est pas valide";
+        message.textContent = "Votre adresse n'est pas valide.";
         return false;
     }
 }
 
-function validationVille (inputVille) {
+const validationVille = function(inputVille) {
     let villeRegEx = new RegExp ("^[A-Za-zàâäéèêëïîôöùûüÿçæœÂÊÎÔÛÄËÏÖÜÀÆÇÉÈŒÙ-]{2,}$", "g");
     let message = document.getElementById("cityErrorMsg");
     let test = villeRegEx.test(inputVille.value);
@@ -207,12 +217,12 @@ function validationVille (inputVille) {
         message.textContent = "";
         return true;
     } else {
-        message.textContent = "Votre ville doit comporter au minimum deux lettres et ne pas avoir de caractères spéciaux ou de chiffres";
+        message.textContent = "Votre ville doit comporter au minimum deux lettres et ne pas avoir de caractères spéciaux ou de chiffres.";
         return false;
     }
 }
 
-function validationEmail (inputEmail) {
+const validationEmail = function(inputEmail) {
     let mailRegEx = new RegExp ("^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,4}$", "g");
     let message = document.getElementById("emailErrorMsg");
     let test = mailRegEx.test(inputEmail.value);
@@ -220,7 +230,7 @@ function validationEmail (inputEmail) {
         message.textContent = "";
         return true;
     } else {
-        message.textContent = "Votre adresse mail n'est pas valide";
+        message.textContent = "Votre adresse mail n'est pas valide.";
         return false;
     }
 }
@@ -231,22 +241,71 @@ function commande () {
     let commander = document.getElementById("order");
     // On écoute le clic sur le bouton
     commander.addEventListener ("click", function(e) {
+        // Par défaut, on empêche l'envoi des données au clic
         e.preventDefault();
-        // Variables des différentes informations du formulaire
-        let prenom = document.getElementById("firstName");
-        let nom = document.getElementById("lastName");
-        let adresse = document.getElementById("address");
-        let ville = document.getElementById("city");
-        let email = document.getElementById("email");
+        // Si un des champs du formulaire n'est pas complété, on empêche l'envoi de la commande
+        if (formulaire.firstName.value === "" || formulaire.lastName.value === "" || formulaire.address.value === "" || formulaire.city.value === "" || formulaire.email.value === "") {
+            e.preventDefault();
+            alert("Veuillez compléter tous les champs du formulaire avant de passer commande.");
+        // Si un des champs du formulaire n'est pas valide, on empêche l'envoi de la commande
+        } else if (validationPrenom(formulaire.firstName) === false || validationNom(formulaire.lastName) === false || validationAdresse(formulaire.address) === false || validationVille(formulaire.city) === false || validationEmail(formulaire.email) === false) {
+            e.preventDefault();
+            alert("Un des champs du formulaire est incorrect.");
+        // Si tout est bon, on envoie la commande
+        } else {
+            // Variables des différentes informations du formulaire
+            let prenom = document.getElementById("firstName");
+            let nom = document.getElementById("lastName");
+            let adresse = document.getElementById("address");
+            let ville = document.getElementById("city");
+            let email = document.getElementById("email");
 
-        // Objet qui regroupe toutes les infos
-        let contact = {
-            firstName = prenom.value,
-            lastName = nom.value,
-            address = adresse.value,
-            city = ville.value,
-            email = email.com
+            // Objet contact qui regroupe toutes les infos du client
+            let contact = {
+                firstName: prenom.value,
+                lastName: nom.value,
+                address: adresse.value,
+                city: ville.value,
+                email: email.value
+            };
+
+            // Création du tableau qui récupèrera tous les id du panier
+            let panierId = [];
+            for (let i = 0; i < panier.length; i++) {
+                panierId.push(panier[i].id);
+            }
+
+            // Création de l'objet qui servira à envoyer toutes les données dans le body de la requête POST de fetch
+            let envoiInfos = {contact, panierId};
+
+            // Passage de la commande
+            fetch ("http://localhost:3000/api/products/order", {
+                method: "POST",
+                headers: {
+                "Content-Type": "application/json",
+                },
+                body: JSON.stringify(envoiInfos),
+            })
+            .then(function (reponse) {
+                return reponse.json();
+            })
+            .then(function (donnees) {
+                console.log(`Tout est ok, voilà le numéro de commande ${donnees.orderId}`);
+                // document.location.href = "confirmation.html?id_commande=" + donnees.orderId;
+            })
+            .catch(function (erreur) {
+                console.log("Erreur : " + erreur);
+            })
         }
-
-    })
+    }) 
 }
+
+// Requête POST via fetch
+            // const commandeAPI = "http://localhost:3000/api/products/order";
+            // let fetchAPI = new Request(commandeAPI, {
+            //     method: "POST",
+            //     headers: {
+            //     "Content-Type": "application/json",
+            //     },
+            //     body: JSON.stringify(envoiInfos),
+            // })
