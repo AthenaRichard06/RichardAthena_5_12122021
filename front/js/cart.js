@@ -268,17 +268,20 @@ function commande () {
                 city: ville.value,
                 email: email.value
             };
+            console.log(contact);
 
             // Création du tableau qui récupèrera tous les id du panier
-            let panierId = [];
+            let products = [];
             for (let i = 0; i < panier.length; i++) {
-                panierId.push(panier[i].id);
+                products.push(panier[i].id);
             }
+            console.log(products);
 
             // Création de l'objet qui servira à envoyer toutes les données dans le body de la requête POST de fetch
-            let envoiInfos = {contact, panierId};
+            let envoiInfos = {contact, products};
+            console.log(envoiInfos);
 
-            // Passage de la commande
+            // Passage de la commande via la requête POST de fetch
             fetch ("http://localhost:3000/api/products/order", {
                 method: "POST",
                 headers: {
@@ -290,22 +293,11 @@ function commande () {
                 return reponse.json();
             })
             .then(function (donnees) {
-                console.log(`Tout est ok, voilà le numéro de commande ${donnees.orderId}`);
-                // document.location.href = "confirmation.html?id_commande=" + donnees.orderId;
+                document.location.href = "confirmation.html?id_commande=" + donnees.orderId;
             })
             .catch(function (erreur) {
                 console.log("Erreur : " + erreur);
-            })
+            })        
         }
     }) 
 }
-
-// Requête POST via fetch
-            // const commandeAPI = "http://localhost:3000/api/products/order";
-            // let fetchAPI = new Request(commandeAPI, {
-            //     method: "POST",
-            //     headers: {
-            //     "Content-Type": "application/json",
-            //     },
-            //     body: JSON.stringify(envoiInfos),
-            // })
