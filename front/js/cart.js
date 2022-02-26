@@ -33,6 +33,7 @@ fetch(api)
 // ************************** Affichage **************************
 // Création de la fonction qui permettra d'ajouter les produits dans le DOM (via le localStorage et l'API)
 function afficherProduits (data) {
+    let texteDOM = "";
     if (panier === null || (panier.length == 0)) {
         titrePanier.insertAdjacentText ("beforeend", " est vide");
     } else {
@@ -40,7 +41,7 @@ function afficherProduits (data) {
             for (let j of data) {
                 // On ajoute la condition que l'id dans le localStorage doit être identique à l'id dans l'API, afin de pouvoir récupérer les infos manquantes
                 if (i.id === j._id) {
-                    let texteDOM = 
+                    texteDOM += 
                     `<article class="cart__item" data-id="${i.id}" data-color="${i.choixCouleur}">
                         <div class="cart__item__img">
                             <img src="${j.imageUrl}" alt="${j.altTxt}">
@@ -62,11 +63,11 @@ function afficherProduits (data) {
                             </div>
                         </div>
                     </article>`
-                    produits.innerHTML += texteDOM;
                 }
             }
         }
     }
+    produits.insertAdjacentHTML ("beforeend", texteDOM);
 }
 
 // Calcul de la quantité totale de produits dans le panier
@@ -223,7 +224,7 @@ const validationVille = function(inputVille) {
 }
 
 const validationEmail = function(inputEmail) {
-    let mailRegEx = new RegExp ("^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,4}$", "g");
+    let mailRegEx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     let message = document.getElementById("emailErrorMsg");
     let test = mailRegEx.test(inputEmail.value);
     if (test) {

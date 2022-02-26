@@ -29,6 +29,7 @@ function creationProduits(data) {
 
 // Création de la fonction qui permettra d'afficher les résultats dans l'index, à partir des objets stockés dans le tableau
 function affichageProduits () {
+    let texteDOM = "";
     for (let i of tabProduits) {
         // Utilisation de URLSearchParams pour le lien vers chaque produit
         let adresse = window.location.href;
@@ -37,7 +38,7 @@ function affichageProduits () {
         lien.searchParams.set("id", i._id)
         
         // Intégration dans le DOM
-        produits.innerHTML +=
+        texteDOM +=
             `<a href="${lien}">
                 <article>
                     <img src="${i.imageUrl}" alt="${i.altTxt}">
@@ -46,6 +47,7 @@ function affichageProduits () {
                 </article>
             </a>`;
     }
+    produits.insertAdjacentHTML ("beforeend", texteDOM);
 }
 
 // CODE FONCTIONNEL EN CAS D'ERREUR
